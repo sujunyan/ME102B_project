@@ -16,12 +16,14 @@ class LegoBuilder{
 public:
     LegoBuilder();
     void moveToXYZ(float x,float y,float z);
+    void rotateToXYZ(int x,int y,int z);
     void test();
 private:
     StepMoter _stepper_x1,_stepper_x2,_stepper_y;
     command_t _command;
     int readCommand();
     int parseCommand();
+    void print_command();
 
 };
 #endif

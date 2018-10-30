@@ -20,6 +20,10 @@ const float DEGREE_PER_TURN =  M_PI * DIAMETER * 360; //
  * LegoBuilder methods
  * */
 
+enum command_id_t {
+   MOVE_XYZ = 0,
+   ROTATE_XYZ = 1
+};
 
 void LegoBuilder::moveToXYZ(float x, float y, float z) {
     log_e("Move to %f %f %f \n",x,y,z);
@@ -48,9 +52,9 @@ LegoBuilder::LegoBuilder():_stepper_x1(MOTOR_STEPS,DIR_X1,STEP_X1), _stepper_x2(
 
 void LegoBuilder::test() {
     Serial.print("Test Start\n");
-    readCommand();
-    //parseCommand();
-    Serial.print("Test End\n");
+    if(readCommand() == 0) // read successfully
+      parseCommand();
+    Serial.print("Test End\n\n");
 }
 #define COMMAND_HEADER 0xff
 
@@ -60,7 +64,7 @@ int LegoBuilder::readCommand() {
         uint8_t theByte = Serial.read();
         //uint8_t theByte = 0;
         if(theByte != COMMAND_HEADER){
-            log_e("Not valid command header\n");
+            log_e("Not valid command header, recieved 0x%x\n",theByte);
             return -1;
         }else{ // if a valid command
            _command.command_id = Serial.read();
@@ -75,12 +79,11 @@ int LegoBuilder::readCommand() {
         log_e("No byte available");
         return -2;
     }
+    log_e("Read Command successfully\n");
+    //print_command();
     return 0;
 }
 
-enum command_id_t {
-   MOVE_XYZ
-};
 /// The protocol:
 /// Header          | command_id    | len       | data
 ///  1 byte(255)    | 1 byte        | 1 byte   | data
@@ -88,12 +91,20 @@ int LegoBuilder::parseCommand() {
     switch (_command.command_id){
         case MOVE_XYZ:{
             if(_command.len != 3 * sizeof(float)){
-                log_e("Invalid move command, sizeof float is %d",sizeof(float));
+                log_e("Invalid move command, sizeof float is %d\n",sizeof(float));
             }
-            float x = *(float *)_command.data;
-            float y = *(float *)(_command.data + sizeof(float));
-            float z = *(float *)(_command.data + 2* sizeof(float));
-            moveToXYZ(x,y,z);
+            float tmp[3];
+            memcpy(tmp,_command.data,sizeof(tmp));
+            moveToXYZ(tmp[0],tmp[1],tmp[2]);
+            break;
+        }
+        case ROTATE_XYZ:{
+            if(_command.len != 3 * sizeof(int)){
+                log_e("Invalid move command, sizeof float is %d\n",sizeof(float));
+            }
+            int tmp[3];
+            memcpy(tmp,_command.data,sizeof(tmp));
+            rotateToXYZ(tmp[0],tmp[1],tmp[2]);
             break;
         }
         default:{
@@ -102,4 +113,27 @@ int LegoBuilder::parseCommand() {
         }
     }
     return 0;
+}
+
+void LegoBuilder::print_command() {
+    for (int i = 0; i < COMMAND_LEN; ++i) {
+        log_e("0x%x,",_command.data[i]);
+    }
+    log_e("\n");
+
+}
+
+void LegoBuilder::rotateToXYZ(int x, int y, int z) {
+    log_e("Rotate  %d %d %d \n",x,y,z);
+    _stepper_x1.startRotate(x);
+    _stepper_x2.startRotate(x);
+    _stepper_y.startRotate(y);
+    while (true){ // try to run the stepper motor at the same time
+        int flag1 = _stepper_x1.nextAction();
+        int flag2 = _stepper_x2.nextAction();
+        int flag3 = _stepper_y.nextAction();
+        if(!flag1 && !flag2 && !flag3)
+            break;
+    }
+    log_e("Rotate  %d %d %d \n",x,y,z);
 }

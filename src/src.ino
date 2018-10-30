@@ -3,7 +3,7 @@
 
 LegoBuilder legoBuilder;
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
     // Set target motor RPM to 60RPM and microstepping to 1 (full step mode)
 }
 
