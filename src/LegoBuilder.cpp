@@ -16,6 +16,8 @@
 const float DIAMETER = (1.0f);
 #define M_PI 3.14159265358979323846
 const float DEGREE_PER_TURN =  M_PI * DIAMETER * 360; //
+const int RPM = 60;
+const int MICRO_STEP = 16;
 /****
  * LegoBuilder methods
  * */
@@ -43,9 +45,9 @@ void LegoBuilder::moveToXYZ(float x, float y, float z) {
 LegoBuilder::LegoBuilder():_stepper_x1(MOTOR_STEPS,DIR_X1,STEP_X1), _stepper_x2(MOTOR_STEPS,DIR_X2,STEP_X2),
                             _stepper_y(MOTOR_STEPS,DIR_Y,STEP_Y){
     // Set target motor RPM to 60RPM and microstepping to 1 (full step mode)
-    _stepper_x1.begin(60, 1);
-    _stepper_x2.begin(60, 1);
-    _stepper_y.begin(60, 1);
+    _stepper_x1.begin(RPM, MICRO_STEP);
+    _stepper_x2.begin(RPM, MICRO_STEP);
+    _stepper_y.begin(RPM, MICRO_STEP);
     memset(&_command,0,sizeof(_command));
 }
 
@@ -128,10 +130,11 @@ void LegoBuilder::rotateToXYZ(int x, int y, int z) {
     _stepper_x1.startRotate(x);
     _stepper_x2.startRotate(x);
     _stepper_y.startRotate(y);
+    int flag1,flag2,flag3;
     while (true){ // try to run the stepper motor at the same time
-        int flag1 = _stepper_x1.nextAction();
-        int flag2 = _stepper_x2.nextAction();
-        int flag3 = _stepper_y.nextAction();
+        flag1 = _stepper_x1.nextAction();
+        flag2 = _stepper_x2.nextAction();
+        flag3 = _stepper_y.nextAction();
         if(!flag1 && !flag2 && !flag3)
             break;
     }

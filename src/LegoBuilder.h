@@ -12,6 +12,7 @@ typedef struct command_t{
    uint8_t len;
    uint8_t data[COMMAND_LEN];
 }command_t;
+
 class LegoBuilder{
 public:
     LegoBuilder();
