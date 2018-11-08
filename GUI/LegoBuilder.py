@@ -11,12 +11,7 @@ class LegoBuilder(QWidget):
         self.initUI()
 
     def initUI(self):
-
-        self.resize(1245,787)
-        self.center()
-        self.setBackgroudColor()
-        self.setWindowTitle("center")
-        self.show()
+        startWindow()
 
     def setBackgroudColor(self):
         p = self.palette()
@@ -24,6 +19,15 @@ class LegoBuilder(QWidget):
         background_color.setNamedColor('#ffffe6')
         p.setColor(self.backgroundRole(), background_color)
         self.setPalette(p)
+
+    def startWindow(self):
+        btn = QPushButton('Button', self)
+        self.resize(1245,787)
+        self.center()
+        self.setBackgroudColor()
+        self.setWindowTitle("center")
+        self.show()
+
 
 
     def center(self):

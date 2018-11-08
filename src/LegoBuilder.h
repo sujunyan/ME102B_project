@@ -18,8 +18,13 @@ public:
     LegoBuilder();
     void moveToXYZ(float x,float y,float z);
     void rotateToXYZ(int x,int y,int z);
+    void rotateToXYZ(float x,float y,float z);
+    void calibrate();
     void test();
 private:
+    float _now_x,_now_y,_now_z;
+    int _switch_x1 = 3;
+    int is_calibrate = 0;
     StepMoter _stepper_x1,_stepper_x2,_stepper_y;
     command_t _command;
     int readCommand();

@@ -42,18 +42,35 @@ class CommunicationNode:
 		self.port.write(msg)
 
 	def test(self):
-		#self.send_move(1,2,3);
-		self.send_rotate(1,2,3);
-		line = self.port.readline()
-		#line = self.read_in_all()
-		if line:
-			line = line.decode('ascii')
-			#print ("msg received: %s"%(line,))
-			print(line,end='')
+		while(True):
+			nums = input("Enter 3 nunmbers to move\n")
+			li = [float(i) for i in nums.split()]
+			print(li)
+			if (len(li) != 3):
+				print("Please enter 3 numbers")
+				continue
+			self.send_move(*li);
+			#line = self.port.readline()
+			line = self.read_in_all()
+			if line:
+				line = line.decode('ascii')
+				#print ("msg received: %s"%(line,))
+				print(line,end='')
 
 	def read_in_all(self):
 		# read in all the lines available in the port
-		line = None
+		if(self.port.in_waiting):
+			line = self.port.readline()
+		else:
+			return None
 		while(self.port.in_waiting):
-			line += self.port.readline()
+			in_line = self.port.readline()
+			line += in_line
+			print(in_line,end='')
 		return line
+
+if __name__ == '__main__':
+	port_name = "COM3"
+	baudrate = 115200
+	node = CommunicationNode(port_name,baudrate)
+	node.test()

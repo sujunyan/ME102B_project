@@ -13,10 +13,10 @@
 #define DIR_Y 19
 #define STEP_Y 18
 #define MOTOR_STEPS 200
-const float DIAMETER = (1.0f);
+const float DIAMETER = (12.2f);
 #define M_PI 3.14159265358979323846
-const float DEGREE_PER_TURN =  M_PI * DIAMETER * 360; //
-const int RPM = 60;
+const float DEGREE_PER_TURN =  M_PI * DIAMETER / 360; //
+const int RPM = 120;
 const int MICRO_STEP = 16;
 /****
  * LegoBuilder methods
@@ -27,23 +27,10 @@ enum command_id_t {
    ROTATE_XYZ = 1
 };
 
-void LegoBuilder::moveToXYZ(float x, float y, float z) {
-    log_e("Move to %f %f %f \n",x,y,z);
-    _stepper_x1.startRotate(x/DEGREE_PER_TURN);
-    _stepper_x2.startRotate(x/DEGREE_PER_TURN);
-    _stepper_y.startRotate(y/DEGREE_PER_TURN);
-    while (true){ // try to run the stepper motor at the same time
-        int flag1 = _stepper_x1.nextAction();
-        int flag2 = _stepper_x2.nextAction();
-        int flag3 = _stepper_y.nextAction();
-        if(!flag1 && !flag2 && !flag3)
-            break;
-    }
-    log_e("Move to %f %f %f done\n",x,y,z);
-}
+
 
 LegoBuilder::LegoBuilder():_stepper_x1(MOTOR_STEPS,DIR_X1,STEP_X1), _stepper_x2(MOTOR_STEPS,DIR_X2,STEP_X2),
-                            _stepper_y(MOTOR_STEPS,DIR_Y,STEP_Y){
+                            _stepper_y(MOTOR_STEPS,DIR_Y,STEP_Y),_now_x(0),_now_y(0),_now_z(0){
     // Set target motor RPM to 60RPM and microstepping to 1 (full step mode)
     _stepper_x1.begin(RPM, MICRO_STEP);
     _stepper_x2.begin(RPM, MICRO_STEP);
@@ -57,6 +44,7 @@ void LegoBuilder::test() {
     if(readCommand() == 0) // read successfully
       parseCommand();
     Serial.print("Test End\n\n");
+    delay(1000);
 }
 #define COMMAND_HEADER 0xff
 
@@ -126,9 +114,9 @@ void LegoBuilder::print_command() {
 }
 
 void LegoBuilder::rotateToXYZ(int x, int y, int z) {
-    log_e("Rotate  %d %d %d \n",x,y,z);
+    //log_e("Rotate  %d %d %d \n",x,y,z);
     _stepper_x1.startRotate(x);
-    _stepper_x2.startRotate(x);
+    _stepper_x2.startRotate(-x);
     _stepper_y.startRotate(y);
     int flag1,flag2,flag3;
     while (true){ // try to run the stepper motor at the same time
@@ -138,5 +126,41 @@ void LegoBuilder::rotateToXYZ(int x, int y, int z) {
         if(!flag1 && !flag2 && !flag3)
             break;
     }
-    log_e("Rotate  %d %d %d \n",x,y,z);
+    log_e("Rotate  %d %d %d done\n",x,y,z);
+}
+
+void LegoBuilder::rotateToXYZ(float x, float y, float z) {
+    //log_e("Rotate  %d %d %d \n",x,y,z);
+    _stepper_x1.startRotate(x);
+    _stepper_x2.startRotate(-x);
+    _stepper_y.startRotate(y);
+    int flag1,flag2,flag3;
+    while (true){ // try to run the stepper motor at the same time
+        flag1 = _stepper_x1.nextAction();
+        flag2 = _stepper_x2.nextAction();
+        flag3 = _stepper_y.nextAction();
+        if(!flag1 && !flag2 && !flag3)
+            break;
+    }
+    //log_e("Rotate  %d %d %d done\n",x,y,z);
+}
+
+void LegoBuilder::moveToXYZ(float x, float y, float z) {
+    //log_e("Move to %f %f %f \n",x,y,z);
+
+    rotateToXYZ( (x - _now_x)/DEGREE_PER_TURN ,( y - _now_y)/DEGREE_PER_TURN,0.0f);
+    _now_x = x;
+    _now_y = y;
+
+    //log_e("Move to %f %f %f \n",x,y,z);
+}
+
+void LegoBuilder::calibrate(){
+    if(is_calibrate)return;
+    while(true){
+        if(digitalRead(_switch_x1))break;
+        rotateToXYZ(10,0,0);
+        delay(1);
+    }
+    is_calibrate = 1;
 }
