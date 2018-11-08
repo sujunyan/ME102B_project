@@ -13,6 +13,7 @@
 #define DIR_Y 19
 #define STEP_Y 18
 #define MOTOR_STEPS 200
+#define COMMAND_HEADER 0xff
 const float DIAMETER = (12.2f);
 #define M_PI 3.14159265358979323846
 const float DEGREE_PER_TURN =  M_PI * DIAMETER / 360; //
@@ -46,7 +47,6 @@ void LegoBuilder::test() {
     Serial.print("Test End\n\n");
     delay(1000);
 }
-#define COMMAND_HEADER 0xff
 
 int LegoBuilder::readCommand() {
     Serial.print("reading command\n");
