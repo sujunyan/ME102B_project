@@ -1,9 +1,13 @@
 # ME102B_project
-## file description
+## Indrodunction
+This is a project repository for ME102B,2018 at UC Berkeley. In this project, we built a Lego Pick
+and Place product along with user-friendly GUI.
+
+## File description
 - The Arduino code is in the /src folder
 - The GUI that runs on the PC is in the /GUI folder (Python3)
 
-## dependency
+## Dependency
 - Arduino library
   - The library need to be installed is in the /src/StepperDriver
 - Python library
