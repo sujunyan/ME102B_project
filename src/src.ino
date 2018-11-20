@@ -18,8 +18,8 @@ const int DELAY_TIME = 100;
 void loop() {
     int swith_val = digitalRead(SWITH_PIN);
     int FSR_val = analogRead(FSR_PIN);
-   Serial.printf("swith %d FSR %d cnt %d\n",swith_val,FSR_val,cnt++);
-   legoBuilder.calibrate();
+   //Serial.printf("swith %d FSR %d cnt %d\n",swith_val,FSR_val,cnt++);
+   //legoBuilder.calibrate();
    //Serial.printf("flag is %d \n",flag);
-   //legoBuilder.test();
+   legoBuilder.test();
 }

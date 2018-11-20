@@ -56,6 +56,7 @@ class CommunicationNode:
 				line = line.decode('ascii')
 				#print ("msg received: %s"%(line,))
 				print(line,end='')
+			print(li)
 
 	def read_in_all(self):
 		# read in all the lines available in the port
