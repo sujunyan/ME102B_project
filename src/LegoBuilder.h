@@ -20,16 +20,25 @@ public:
     void rotateToXYZ(int x,int y,int z);
     void rotateToXYZ(float x,float y,float z);
     void calibrate();
-    void test();
+    void softwareSystem();
+    void testRunSquare();
 private:
     float _now_x,_now_y,_now_z;
-    int _switch_x1 = 3;
-    int is_calibrate = 0;
+    int _switch_x1 = 2;int _switch_x2 = 3;int _switch_y = 4;
+    int _is_calibrate = 0;
     StepMoter _stepper_x1,_stepper_x2,_stepper_y;
     command_t _command;
+    int _gripper_relay_pin = 5;
+    int _push_relay_pin = 17;
     int readCommand();
     int parseCommand();
     void print_command();
+    //
+    void pushGripper();
+    void pullGripper();
+    void tightenGripper();
+    void releaseGripper();
+
 
 };
 #endif

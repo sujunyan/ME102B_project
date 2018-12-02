@@ -14,10 +14,10 @@
 #define STEP_Y 18
 #define MOTOR_STEPS 200
 #define COMMAND_HEADER 0xff
-const float CORRECTION = 1.0f/(1.0367f); // correction for the accuracy, according to the measurement.
-const float DIAMETER = (12.2f) * CORRECTION;
-#define M_PI 3.14159265358979323846
-const float DEGREE_PER_TURN =  M_PI * DIAMETER / 360; //
+const float CORRECTION = (1.0367f); // correction for the accuracy, according to the measurement.
+const float DIAMETER = (12.2f) ;
+#define M_PI  3.14159265358979323846
+const float DEGREE_PER_TURN =  (M_PI * DIAMETER / 360 ) * CORRECTION; //
 const int RPM = 120;
 const int MICRO_STEP = 16;
 /****
@@ -26,7 +26,8 @@ const int MICRO_STEP = 16;
 
 enum command_id_t {
    MOVE_XYZ = 0,
-   ROTATE_XYZ = 1
+   ROTATE_XYZ = 1,
+   PUSH_AND_GRIBPPER_ACTION = 2,
 };
 
 
@@ -38,14 +39,21 @@ LegoBuilder::LegoBuilder():_stepper_x1(MOTOR_STEPS,DIR_X1,STEP_X1), _stepper_x2(
     _stepper_x2.begin(RPM, MICRO_STEP);
     _stepper_y.begin(RPM, MICRO_STEP);
     memset(&_command,0,sizeof(_command));
+    //
+    pinMode(_push_relay_pin,OUTPUT);
+    pinMode(_gripper_relay_pin,OUTPUT);
+    pinMode(_switch_y,INPUT);
+    pinMode(_switch_x1,INPUT);
+    pinMode(_switch_x2,INPUT);
 }
 
 
-void LegoBuilder::test() {
-    Serial.print("Test Start\n");
+
+void LegoBuilder::softwareSystem() {
+    //Serial.print("Test Start\n");
     if(readCommand() == 0) // read successfully
       parseCommand();
-    Serial.print("Test End\n\n");
+    //Serial.print("Test End\n\n");
     delay(1000);
 }
 
@@ -96,6 +104,19 @@ int LegoBuilder::parseCommand() {
             int tmp[3];
             memcpy(tmp,_command.data,sizeof(tmp));
             rotateToXYZ(tmp[0],tmp[1],tmp[2]);
+            break;
+        }
+        case PUSH_AND_GRIBPPER_ACTION:{
+            if(_command.len != 1){
+                log_e("Invalid push and gripper command!");
+            }
+            switch (_command.data[0]) {
+                case 1: {pushGripper();break;}
+                case 2: {pullGripper();break;}
+                case 3: {tightenGripper();break;}
+                case 4: {releaseGripper();break;}
+                default: {log_e("Invalid push and gripper command, wrong data\n");break;}
+            }
             break;
         }
         default:{
@@ -157,11 +178,63 @@ void LegoBuilder::moveToXYZ(float x, float y, float z) {
 }
 
 void LegoBuilder::calibrate(){
-    if(is_calibrate)return;
+  //Serial.print("calibrate start\n");
+  //Serial.printf("limit_swtich is %d\n",digitalRead(_switch_y));
+    if(_is_calibrate)return;
+    int y_direction = -2;
+    int x_direction = -2;
+    int flag_x1 = 0;
+    int flag_x2 = 0;
+    int flag_y = 0;
     while(true){
-        if(digitalRead(_switch_x1))break;
-        rotateToXYZ(10,0,0);
+        if(digitalRead(_switch_x1))flag_x1=1;
+        if(digitalRead(_switch_x2))flag_x2=1;
+        if(flag_x1 && flag_x2) break;
+        if(!flag_x1)_stepper_x1.rotate(x_direction);
+        if(!flag_x2)_stepper_x2.rotate(-x_direction);
         delay(1);
     }
-    is_calibrate = 1;
+
+    _now_x =0;
+    _now_z =0;
+    moveToXYZ(100,0,0);
+     while(true){
+         Serial.printf("flag_y %d\n",flag_y);
+        if(digitalRead(_switch_y))flag_y=1;
+        if(flag_y) break;
+        if(!flag_y)_stepper_y.rotate(y_direction);
+        delay(1);
+    }
+
+    Serial.print("calibrate done\n");
+    _is_calibrate = 1;
+    _now_y =0;
+}
+
+void LegoBuilder::testRunSquare(){
+    const int RUN_LEN = 50;
+    const int DELAY_TIME = 100;
+    moveToXYZ(0,0,0);
+    delay(DELAY_TIME);
+    moveToXYZ(RUN_LEN,0,0);
+    delay(DELAY_TIME);
+    moveToXYZ(RUN_LEN,RUN_LEN,0);
+    delay(DELAY_TIME);
+    moveToXYZ(0,RUN_LEN,0);
+    delay(DELAY_TIME);
+    moveToXYZ(0,0,0);
+}
+
+
+void LegoBuilder::pushGripper(){
+    digitalWrite(_push_relay_pin,HIGH);
+}
+void LegoBuilder::pullGripper(){
+    digitalWrite(_push_relay_pin,LOW);
+}
+void LegoBuilder::tightenGripper(){
+    digitalWrite(_gripper_relay_pin,LOW);
+}
+void LegoBuilder::releaseGripper(){
+    digitalWrite(_gripper_relay_pin,HIGH);
 }

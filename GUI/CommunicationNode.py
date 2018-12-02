@@ -7,18 +7,24 @@ from copy import copy
 toHex = lambda x: "".join("{:02X}".format(ord(c)) for c in x)
 MOVE_XYZ = 0
 ROTATE_XYZ = 1
+PUSH_AND_GRIBPPER_ACTION = 2
 
 class CommunicationNode:
 	def __init__(self, portname, baudrate):
 		# configure and open the port
-		self.port = Serial(port = portname, baudrate = baudrate,
+		self.portname = portname
+		self.baudrate = baudrate
+			# Didn't set the 'timeout' field, which means the port.read
+		# will be blocked if the number of bytes read is not reached.
+	def start(self):
+
+		self.port = Serial(port = self.portname, baudrate = self.baudrate,
 			parity = PARITY_NONE,
 			stopbits = STOPBITS_ONE,
 			bytesize = 	EIGHTBITS)
-		# Didn't set the 'timeout' field, which means the port.read
-		# will be blocked if the number of bytes read is not reached.
 		if not (self.is_open()):
 			self.port.open()
+
 
 	def on_shutdown(self):
 		self.port.close()
@@ -41,6 +47,14 @@ class CommunicationNode:
 		msg = struct.pack("<3B3i",0xff,ROTATE_XYZ,12,x,y,z);
 		self.port.write(msg)
 
+	def send_gripper_action(self,val):
+		#case 1: {pushGripper();break;}
+        #case 2: {pullGripper();break;}
+        #case 3: {tightenGripper();break;}
+        #case 4: {releaseGripper();break;}
+		msg = struct.pack("<4B",0xff,PUSH_AND_GRIBPPER_ACTION,1,val);
+		self.port.write(msg)
+
 	def test(self):
 		while(True):
 			nums = input("Enter 3 nunmbers to move\n")
@@ -57,6 +71,8 @@ class CommunicationNode:
 				#print ("msg received: %s"%(line,))
 				print(line,end='')
 			print(li)
+	def setPortName(self,port_name):
+		self.portname = portname
 
 	def read_in_all(self):
 		# read in all the lines available in the port
@@ -74,4 +90,7 @@ if __name__ == '__main__':
 	port_name = "COM3"
 	baudrate = 115200
 	node = CommunicationNode(port_name,baudrate)
+	node.start()
 	node.test()
+
+#150 -70 0
