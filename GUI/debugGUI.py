@@ -72,6 +72,15 @@ class FrontPageWidget(QWidget):
         push_btn.move(300,100)
         push_btn.clicked.connect(lambda: self.gripperAction(4))
 
+        push_btn = QPushButton('pick lego', self)
+        push_btn.move(0,200)
+        push_btn.clicked.connect(lambda: self.gripperAction(5))
+
+        push_btn = QPushButton('place lego', self)
+        push_btn.move(100,200)
+        push_btn.clicked.connect(lambda: self.gripperAction(6))
+
+
     def legoStart(self):
         pass
 
@@ -98,5 +107,6 @@ if __name__ == '__main__':
     ex = FrontPageWidget()
     sys.exit(app.exec_())
 
-#165 85 0
-#35 
+#35
+#160 87 0
+#450 60 0

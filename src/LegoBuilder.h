@@ -4,6 +4,7 @@
 #include <A4988.h>
 #include <cstdlib>
 #include <cstdint>
+#include <Servo.h>
 #define StepMoter A4988
 #define COMMAND_LEN 50
 
@@ -19,9 +20,11 @@ public:
     void moveToXYZ(float x,float y,float z);
     void rotateToXYZ(int x,int y,int z);
     void rotateToXYZ(float x,float y,float z);
+    void moveToOrigin();
     void calibrate();
     void softwareSystem();
     void testRunSquare();
+    void test();
 private:
     float _now_x,_now_y,_now_z;
     int _switch_x1 = 2;int _switch_x2 = 3;int _switch_y = 4;
@@ -30,6 +33,8 @@ private:
     command_t _command;
     int _gripper_relay_pin = 5;
     int _push_relay_pin = 17;
+    Servo rotate_servo;
+    int _servo_pin = 6;
     int readCommand();
     int parseCommand();
     void print_command();
@@ -38,6 +43,8 @@ private:
     void pullGripper();
     void tightenGripper();
     void releaseGripper();
+    void pickLego();
+    void placeLego();
 
 
 };

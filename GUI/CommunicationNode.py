@@ -52,6 +52,8 @@ class CommunicationNode:
         #case 2: {pullGripper();break;}
         #case 3: {tightenGripper();break;}
         #case 4: {releaseGripper();break;}
+        #case 5: {pickLego();break;}
+        #case 6: {placeLego();break;}
 		msg = struct.pack("<4B",0xff,PUSH_AND_GRIBPPER_ACTION,1,val);
 		self.port.write(msg)
 

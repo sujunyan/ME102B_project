@@ -3,7 +3,14 @@
 /******
  * Debug functions
  * ******/
-#define log_e Serial.printf
+
+//#define LEGO_DEBUG
+#ifdef LEGO_DEBUG
+    #define log_e Serial.printf
+#else
+    void log_e(const char * format, ...){}
+#endif
+
 
 /// The configs
 #define DIR_X1 23
@@ -38,6 +45,7 @@ LegoBuilder::LegoBuilder():_stepper_x1(MOTOR_STEPS,DIR_X1,STEP_X1), _stepper_x2(
     _stepper_x1.begin(RPM, MICRO_STEP);
     _stepper_x2.begin(RPM, MICRO_STEP);
     _stepper_y.begin(RPM, MICRO_STEP);
+    rotate_servo.attach(_servo_pin);
     memset(&_command,0,sizeof(_command));
     //
     pinMode(_push_relay_pin,OUTPUT);
@@ -54,7 +62,7 @@ void LegoBuilder::softwareSystem() {
     if(readCommand() == 0) // read successfully
       parseCommand();
     //Serial.print("Test End\n\n");
-    delay(1000);
+    delay(10);
 }
 
 int LegoBuilder::readCommand() {
@@ -115,6 +123,8 @@ int LegoBuilder::parseCommand() {
                 case 2: {pullGripper();break;}
                 case 3: {tightenGripper();break;}
                 case 4: {releaseGripper();break;}
+                case 5: {pickLego();break;}
+                case 6: {placeLego();break;}
                 default: {log_e("Invalid push and gripper command, wrong data\n");break;}
             }
             break;
@@ -181,14 +191,21 @@ void LegoBuilder::calibrate(){
   //Serial.print("calibrate start\n");
   //Serial.printf("limit_swtich is %d\n",digitalRead(_switch_y));
     if(_is_calibrate)return;
-    int y_direction = -2;
+    int y_direction = -3;
     int x_direction = -2;
     int flag_x1 = 0;
     int flag_x2 = 0;
     int flag_y = 0;
     while(true){
-        if(digitalRead(_switch_x1))flag_x1=1;
-        if(digitalRead(_switch_x2))flag_x2=1;
+        if(digitalRead(_switch_x1)){
+            delay(1);
+            if(digitalRead(_switch_x1))flag_x1=1; // make sure the switch is hit
+        }
+
+        if(digitalRead(_switch_x2)){
+            delay(1);
+            if(digitalRead(_switch_x2))flag_x2=1;
+        }
         if(flag_x1 && flag_x2) break;
         if(!flag_x1)_stepper_x1.rotate(x_direction);
         if(!flag_x2)_stepper_x2.rotate(-x_direction);
@@ -199,8 +216,12 @@ void LegoBuilder::calibrate(){
     _now_z =0;
     moveToXYZ(100,0,0);
      while(true){
-         Serial.printf("flag_y %d\n",flag_y);
-        if(digitalRead(_switch_y))flag_y=1;
+         //Serial.printf("flag_y %d\n",flag_y);
+        if(digitalRead(_switch_y)){
+            delay(1);
+            if(digitalRead(_switch_y))
+                flag_y=1;
+        }
         if(flag_y) break;
         if(!flag_y)_stepper_y.rotate(y_direction);
         delay(1);
@@ -225,6 +246,19 @@ void LegoBuilder::testRunSquare(){
     moveToXYZ(0,0,0);
 }
 
+void LegoBuilder::test(){
+    delay(1000);
+    rotate_servo.write(45);
+    delay(1000);
+    rotate_servo.write(135);
+
+}
+
+void LegoBuilder::moveToOrigin(){
+    moveToXYZ(165,87,0);
+}
+
+
 
 void LegoBuilder::pushGripper(){
     digitalWrite(_push_relay_pin,HIGH);
@@ -233,8 +267,25 @@ void LegoBuilder::pullGripper(){
     digitalWrite(_push_relay_pin,LOW);
 }
 void LegoBuilder::tightenGripper(){
-    digitalWrite(_gripper_relay_pin,LOW);
+    digitalWrite(_gripper_relay_pin,HIGH);
 }
 void LegoBuilder::releaseGripper(){
-    digitalWrite(_gripper_relay_pin,HIGH);
+    digitalWrite(_gripper_relay_pin,LOW);
+}
+const int pick_delay_time = 500;
+void LegoBuilder::pickLego(){
+    pushGripper();
+    delay(pick_delay_time);
+    tightenGripper();
+    delay(pick_delay_time);
+    pullGripper();
+
+}
+void LegoBuilder::placeLego(){
+    pushGripper();
+    delay(pick_delay_time);
+    releaseGripper();
+    delay(pick_delay_time);
+    pullGripper();
+
 }
