@@ -6,6 +6,11 @@ from PyQt5.QtGui import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 
+
+port_name = "COM3"
+baudrate = 115200
+node = CommunicationNode.CommunicationNode(port_name,baudrate)
+
 # the front page widget that is in charge of front page
 class FrontPageWidget(QWidget):
 
@@ -269,6 +274,7 @@ class GameModeWidget(ModeWidget):
 
 
 if __name__ == '__main__':
+    node.start()
     app = QApplication(sys.argv)
     ex = FrontPageWidget()
     sys.exit(app.exec_())

@@ -4,8 +4,8 @@
 LegoBuilder legoBuilder;
 void setup() {
   Serial.begin(115200);
-  legoBuilder.calibrate();
-  legoBuilder.moveToOrigin();
+  //legoBuilder.calibrate();
+  //legoBuilder.moveToOrigin();
 }
 
 int flag = 0;

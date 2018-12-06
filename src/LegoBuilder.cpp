@@ -125,6 +125,7 @@ int LegoBuilder::parseCommand() {
                 case 4: {releaseGripper();break;}
                 case 5: {pickLego();break;}
                 case 6: {placeLego();break;}
+                case 7: {calibrate();break;}
                 default: {log_e("Invalid push and gripper command, wrong data\n");break;}
             }
             break;
@@ -272,7 +273,7 @@ void LegoBuilder::tightenGripper(){
 void LegoBuilder::releaseGripper(){
     digitalWrite(_gripper_relay_pin,LOW);
 }
-const int pick_delay_time = 500;
+const int pick_delay_time = 1000;
 void LegoBuilder::pickLego(){
     pushGripper();
     delay(pick_delay_time);

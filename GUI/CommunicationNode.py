@@ -14,6 +14,8 @@ class CommunicationNode:
 		# configure and open the port
 		self.portname = portname
 		self.baudrate = baudrate
+		self.origin = (160,87,0)
+		self.dispensor_pos = (460,60,0)
 			# Didn't set the 'timeout' field, which means the port.read
 		# will be blocked if the number of bytes read is not reached.
 	def start(self):
@@ -87,6 +89,13 @@ class CommunicationNode:
 			line += in_line
 			print(in_line,end='')
 		return line
+
+	def goToOrigin(self):
+		self.send_move(*self.origin)
+
+	def goToDispensor(self):
+		self.send_move(*self.dispensor_pos)
+
 
 if __name__ == '__main__':
 	port_name = "COM3"

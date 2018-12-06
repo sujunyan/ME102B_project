@@ -56,6 +56,8 @@ class FrontPageWidget(QWidget):
         #case 3: {tightenGripper();break;}
         #case 4: {releaseGripper();break;}
 
+        #case 7: {calibrate();break;}
+
         push_btn = QPushButton('push down', self)
         push_btn.move(0,100)
         push_btn.clicked.connect(lambda: self.gripperAction(1))
@@ -81,6 +83,11 @@ class FrontPageWidget(QWidget):
         push_btn.clicked.connect(lambda: self.gripperAction(6))
 
 
+        push_btn = QPushButton('calibrate', self)
+        push_btn.move(0,300)
+        push_btn.clicked.connect(lambda: self.gripperAction(7))
+
+
     def legoStart(self):
         pass
 
@@ -88,6 +95,10 @@ class FrontPageWidget(QWidget):
         self.xEdit = QLineEdit(self)
         self.yEdit = QLineEdit(self)
         self.zEdit = QLineEdit(self)
+        self.xEdit.setText('460')
+        self.yEdit.setText('40')
+        self.zEdit.setText('0')
+
         self.yEdit.move(170,0)
         self.zEdit.move(340,0)
 
@@ -108,5 +119,5 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 
 #35
-#160 87 0
-#450 60 0
+#170 65 0
+#455  40 0
