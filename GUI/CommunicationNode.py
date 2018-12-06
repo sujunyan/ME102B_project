@@ -2,12 +2,22 @@
 from serial import *
 import struct
 from copy import copy
+import time
 
 
 toHex = lambda x: "".join("{:02X}".format(ord(c)) for c in x)
 MOVE_XYZ = 0
 ROTATE_XYZ = 1
 PUSH_AND_GRIBPPER_ACTION = 2
+
+# 3 * 3 matrix for lego pos
+Lego_pos_list = [ [ (182,105,0), (268,105,0), (354,105,0)   ] ,
+                    [(182,191,0), (268,191,0), (354,191,0) ],
+                    [(182,270,0), (268,270,0), (354,270,0) ] ]
+
+line_x1 = 230
+line_x2 = 300
+
 
 class CommunicationNode:
 	def __init__(self, portname, baudrate):
@@ -95,6 +105,35 @@ class CommunicationNode:
 
 	def goToDispensor(self):
 		self.send_move(*self.dispensor_pos)
+
+
+
+	def pickAndPlace(self,start_pos,end_pos):
+		self.send_move(*start_pos)
+		self.send_gripper_action(5) # pick a lego
+		time.sleep(5)
+		(start_x,start_y,z)  = start_pos
+		start_offset = 60 # path planning to avoid
+		next_x = start_x
+		if(start_x < 300):
+			next_x = start_x + start_offset
+		if(start_x > 300):
+			next_x = start_x - start_offset
+		self.send_move(next_x, start_y, 0)
+		next_y = 20 # might need delay
+		self.send_move(next_x, next_y, 0) # go all the way to the right side
+
+		(end_x,end_y,z) = end_pos
+		if (end_x < line_x1):
+			next_x = line_x1
+		else:
+			next_x = line_x2
+		self.send_move(next_x,next_y,0)
+		next_y = end_y
+		self.send_move(next_x,next_y,0)
+		next_x = end_x
+		self.send_move(next_x,next_y,0)
+		self.send_gripper_action(6) # place a lego
 
 
 if __name__ == '__main__':

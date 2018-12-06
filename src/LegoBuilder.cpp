@@ -273,14 +273,15 @@ void LegoBuilder::tightenGripper(){
 void LegoBuilder::releaseGripper(){
     digitalWrite(_gripper_relay_pin,LOW);
 }
-const int push_delay_time = 800;
-const int pull_delay_time = 800;
+const int push_delay_time = 1000;
+const int pull_delay_time = 1000;
 void LegoBuilder::pickLego(){
     pushGripper();
     delay(push_delay_time);
     tightenGripper();
     delay(pull_delay_time);
     pullGripper();
+    delay(pull_delay_time);
 
 }
 void LegoBuilder::placeLego(){
@@ -289,5 +290,6 @@ void LegoBuilder::placeLego(){
     releaseGripper();
     delay(pull_delay_time);
     pullGripper();
+    delay(pull_delay_time);
 
 }

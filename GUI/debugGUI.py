@@ -12,6 +12,14 @@ port_name = "COM3"
 baudrate = 115200
 node = CommunicationNode.CommunicationNode(port_name,baudrate)
 
+# 3 * 3 matrix for lego pos
+Lego_pos_list = [ [ (182,105,0), (268,105,0), (354,105,0)   ] ,
+                    [(182,191,0), (268,191,0), (354,191,0) ],
+                    [(182,270,0), (268,270,0), (354,270,0) ] ]
+
+dispensor1_pos = [(450,43,0), (450,126,0), (450,207,0),(450,288,0)]
+dispensor2_pos = [(92,39,0), (92,121,0), (92,204,0),(92,287,0)]
+
 class FrontPageWidget(QWidget):
 
     def __init__(self):
@@ -93,14 +101,17 @@ class FrontPageWidget(QWidget):
 
     def pickAndPlace(self):
         pass
-        node.send_move(450,207,0)
-        time.sleep(5)
-        self.gripperAction(5) ## pick a lego
-        time.sleep(3)
-        node.send_move(354,105,0)
-        time.sleep(5)
-        self.gripperAction(6) ## place a lego
-        time.sleep(3)
+
+        #node.send_move(450,207,0)
+        ##time.sleep(5)
+        #self.gripperAction(5) ## pick a lego
+        ##time.sleep(3)
+        #node.send_move(354,105,0)
+        ##time.sleep(5)
+        #self.gripperAction(6) ## place a lego
+        #time.sleep(3)
+        node.pickAndPlace(dispensor2_pos[1],Lego_pos_list[1][1])
+
 
 
 
@@ -112,7 +123,7 @@ class FrontPageWidget(QWidget):
         self.yEdit = QLineEdit(self)
         self.zEdit = QLineEdit(self)
         self.xEdit.setText('450')
-        self.yEdit.setText('40')
+        self.yEdit.setText('43')
         self.zEdit.setText('0')
 
         self.yEdit.move(170,0)
@@ -134,11 +145,20 @@ if __name__ == '__main__':
     ex = FrontPageWidget()
     sys.exit(app.exec_())
 
+#dispensor1_pos
 #450  43 0
 #450 126 0
 #450 207 0
 #450 288 0
 
+
+#dispensor2_pos
+# 92 39 0
+# 92 121 0
+# 92 204 0
+# 92 287 0
+
+# Lego pos
 #182 105 0
 #182 191 0
 #182 270 0
