@@ -5,11 +5,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
+import CommunicationNode
 
 
-port_name = "COM3"
-baudrate = 115200
-node = CommunicationNode.CommunicationNode(port_name,baudrate)
+
+#port_name = "COM3"
+#baudrate = 115200
+#node = CommunicationNode.CommunicationNode(port_name,baudrate)
 
 # the front page widget that is in charge of front page
 class FrontPageWidget(QWidget):
@@ -266,15 +268,121 @@ class GameModeWidget(ModeWidget):
         self.center()
         self.setGoFrontPageButton("GUI-fig/GamesModePage/GameMode.png")
         ## set the buttons
-        self.setButton("GUI-fig/GamesModePage/ticTacToe.png",(438,156),(164,301),None)
+        self.setButton("GUI-fig/GamesModePage/ticTacToe.png",(438,156),(164,301),self.goTicTacToe)
         self.setButton("GUI-fig/GamesModePage/Checkers.png",(438,156),(643,301),None)
         self.setButton("GUI-fig/GamesModePage/comingSoon.png",(438,156),(164,486),None)
         self.setButton("GUI-fig/GamesModePage/comingSoon.png",(438,156),(643,486),None)
 
+    def goTicTacToe(self):
+        self.TTTpage = TicTacToeWidge()
+        self.TTTpage.show()
+        self.close()
+
+
+class ShapeWidget(QWidget):
+    def __init__(self,parent=None,position = (0,0) , size = (160,160),color = '#ff0000', is_cross = 0):
+        super(ShapeWidget,self).__init__(parent)
+        self.size = size
+        self.color = color
+        self.setGeometry(*position,*size )
+        self.show()
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.drawPixmap(event.rect(), self.pixmap)
+
+    def drawShape(self,qp):
+
+        col = QColor(0, 0, 0)
+        col.setNamedColor(self.color)
+        qp.setPen(col)
+
+        qp.setBrush(QColor(self.color))
+        qp.drawRect(0, 0, * self.size)
+
+    def setSetting(self,size,color):
+        self.size = size
+        self.color = color
+
+
+
+# TicTacToe grid Widge
+class TTTGridWidget(QWidget):
+    def __init__(self, parent=None):
+        super(TTTGridWidget, self).__init__(parent)
+        self.initUI()
+        self.setMouseTracking(True)
+
+    def initUI(self):
+        # the mouse x and mouse y
+        self.mouse_x = 0
+        self.mouse_y = 0
+        self.x = 367
+        self.y = 234
+        self.w = 480
+        self.h = 480
+        self.resolution = 3
+        self.step = int(self.w / self.resolution)
+        self.setGeometry(self.x, self.y, self.w , self.h )
+        self.cur_lego_shape = ShapeWidget(self)
+        #self.setGeometry(0, 0, 1245,787)
+
+        #self.label = QLabel(self)
+        #self.label.resize(200, 40)
+        self.show()
+
+    def mouseMoveEvent(self, event):
+        self.mouse_x = event.x()
+        self.mouse_y = event.y()
+        self.cur_lego_shape.move(*self.mouseToGrid())
+        #print((event.x(),event.y()))
+
+    def mousePressEvent(self,event):
+        self.cur_lego_shape = TTTGridWidget(self,position =self.mouseToGrid())
+        self.cur_lego_shape.setSetting((60,60),'#00ff00')
+
+
+    def mouseToGrid(self):
+        # change from mouse coordinate to the grid coordinate
+        (x,y) = (self.mouse_x,self.mouse_y)
+        x = int(x/self.step) * self.step
+        y = int(y/self.step) * self.step
+        return (x,y)
+
+    def paintEvent(self, e):
+
+        qp = QPainter()
+        qp.begin(self)
+        self.drawGrid(qp)
+        qp.end()
+
+    def drawGrid(self,qp):
+        pen = QPen(Qt.black, 2, Qt.SolidLine)
+        qp.setPen(pen)
+        # draw columns
+        for x in range(0,self.h + self.step,self.step):
+            qp.drawLine(x,0,x,self.w)
+            #print(x)
+        for y in range(0,self.w + self.step,self.step):
+            qp.drawLine(0,y,self.h,y)
+            #print(x)
+
+
+class TicTacToeWidge(ModeWidget):
+    def __init__(self,parent = None):
+        super().__init__()
+        self.setLayout()
+        self.grid = TTTGridWidget(self)
+
+    def setLayout(self):
+        self.resize(1245,787)
+        self.setBackgroudColor()
+        self.center()
+        self.setGoFrontPageButton("GUI-fig/BuildMode/BuildMode.png")
 
 
 if __name__ == '__main__':
-    node.start()
+    #node.start()
     app = QApplication(sys.argv)
     ex = FrontPageWidget()
     sys.exit(app.exec_())

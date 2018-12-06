@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 import CommunicationNode
+import time
 
 
 port_name = "COM3"
@@ -82,10 +83,25 @@ class FrontPageWidget(QWidget):
         push_btn.move(100,200)
         push_btn.clicked.connect(lambda: self.gripperAction(6))
 
-
         push_btn = QPushButton('calibrate', self)
         push_btn.move(0,300)
         push_btn.clicked.connect(lambda: self.gripperAction(7))
+
+        push_btn = QPushButton('pick and place once', self)
+        push_btn.move(100,300)
+        push_btn.clicked.connect(self.pickAndPlace)
+
+    def pickAndPlace(self):
+        pass
+        node.send_move(450,40,0)
+        time.sleep(5)
+        self.gripperAction(5) ## pick a lego
+        time.sleep(5)
+        node.send_move(187,97,0)
+        time.sleep(5)
+        self.gripperAction(6) ## place a lego
+        time.sleep(5)
+
 
 
     def legoStart(self):
@@ -95,7 +111,7 @@ class FrontPageWidget(QWidget):
         self.xEdit = QLineEdit(self)
         self.yEdit = QLineEdit(self)
         self.zEdit = QLineEdit(self)
-        self.xEdit.setText('460')
+        self.xEdit.setText('450')
         self.yEdit.setText('40')
         self.zEdit.setText('0')
 
@@ -120,4 +136,8 @@ if __name__ == '__main__':
 
 #35
 #170 65 0
-#455  40 0
+#450  40 0
+#450 120 0
+#450 200 0
+
+#187 97 0
