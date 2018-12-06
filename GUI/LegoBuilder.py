@@ -280,32 +280,53 @@ class GameModeWidget(ModeWidget):
 
 
 class ShapeWidget(QWidget):
-    def __init__(self,parent=None,position = (0,0) , size = (160,160),color = '#ff0000', is_cross = 0):
+    def __init__(self,parent=None, position = (0,0) , size = (160,160),color = '#ff0000', is_cross = 0):
         super(ShapeWidget,self).__init__(parent)
         self.size = size
         self.color = color
         self.setGeometry(*position,*size )
+        if (is_cross):
+            self.pixmap = QPixmap("GUI-fig/tictactoe/cross.png")
+        else:
+            self.pixmap = QPixmap("GUI-fig/tictactoe/circle.png")
         self.show()
 
     def paintEvent(self, e):
         painter = QPainter(self)
-        painter.drawPixmap(event.rect(), self.pixmap)
-
-    def drawShape(self,qp):
-
-        col = QColor(0, 0, 0)
-        col.setNamedColor(self.color)
-        qp.setPen(col)
-
-        qp.setBrush(QColor(self.color))
-        qp.drawRect(0, 0, * self.size)
+        painter.drawPixmap(e.rect(), self.pixmap)
 
     def setSetting(self,size,color):
         self.size = size
         self.color = color
 
+class TTTGridStatusWidget(QWidget):
+    def __init__(self,parent=None):
+        super(TTTGridStatusWidget,self).__init__(parent)
+        position = (50,200)
+        size = (300,100)
+        self.setGeometry(*position,*size )
+        self.player1_turn_img = QPixmap("GUI-fig/tictactoe/Player1turn.png")
+        self.player2_turn_img = QPixmap("GUI-fig/tictactoe/Player2turn.png")
+        self.player1_win_img = QPixmap("GUI-fig/tictactoe/Player1wins.png")
+        self.player2_win_img = QPixmap("GUI-fig/tictactoe/Player2wins.png")
+        self.pixmap = self.player1_turn_img
 
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.drawPixmap(e.rect(), self.pixmap)
 
+    def setSetting(self,val):
+        if(val == 1):
+            self.pixmap = self.player1_turn_img
+
+        if(val == 2):
+            self.pixmap = self.player2_turn_img
+
+        if(val == 3):
+            self.pixmap = self.player1_win_img
+
+        if(val == 4):
+            self.pixmap = self.player2_win_img
 # TicTacToe grid Widge
 class TTTGridWidget(QWidget):
     def __init__(self, parent=None):
@@ -324,8 +345,11 @@ class TTTGridWidget(QWidget):
         self.resolution = 3
         self.step = int(self.w / self.resolution)
         self.setGeometry(self.x, self.y, self.w , self.h )
-        self.cur_lego_shape = ShapeWidget(self)
+        self.cur_shape = ShapeWidget(self)
+        self.is_cross = 1
         #self.setGeometry(0, 0, 1245,787)
+        self.check_win_table = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]]
+        self.win_status = -1
 
         #self.label = QLabel(self)
         #self.label.resize(200, 40)
@@ -334,12 +358,41 @@ class TTTGridWidget(QWidget):
     def mouseMoveEvent(self, event):
         self.mouse_x = event.x()
         self.mouse_y = event.y()
-        self.cur_lego_shape.move(*self.mouseToGrid())
+        self.cur_shape.move(*self.mouseToGrid())
         #print((event.x(),event.y()))
 
     def mousePressEvent(self,event):
-        self.cur_lego_shape = TTTGridWidget(self,position =self.mouseToGrid())
-        self.cur_lego_shape.setSetting((60,60),'#00ff00')
+        (x,y) = self.mouseToGrid()
+        x = int(x / self.step)
+        y = int(y / self.step)
+        print (x,y)
+
+        if(self.win_status != -1):
+            return
+
+        self.check_win_table[x][y] = self.is_cross
+        print (self.check_win_table)
+        self.cur_shape = ShapeWidget(self,position =self.mouseToGrid(),is_cross = self.is_cross)
+        if (self.is_cross == 1):
+            self.is_cross = 0
+            super().status.setSetting(2)
+        else:
+            self.is_cross = 1
+            parent().status.setSetting(2)
+        self.checkWin()
+
+    def checkWin(self):
+        # check if cross win
+        for i in range(3):
+            if (self.check_win_table[i][0] == 0 and self.check_win_table[i][1] == 0 and self.check_win_table[i][2] == 0) or (self.check_win_table[0][i] == 0 and self.check_win_table[1][i] == 0 and self.check_win_table[2][i] == 0):
+                self.win_status = 0
+
+            if (self.check_win_table[i][0] == 1 and self.check_win_table[i][1] == 1 and self.check_win_table[i][2] == 1) or (self.check_win_table[0][i] == 1 and self.check_win_table[1][i] == 1 and self.check_win_table[2][i] == 1):
+                self.win_status = 1
+
+        if ( (self.check_win_table[0][0] == self.check_win_table[1][1] and self.check_win_table[1][1] == self.check_win_table[2][2] ) or (self.check_win_table[0][2] == self.check_win_table[1][1] and self.check_win_table[1][1] == self.check_win_table[2][0]) ):
+            self.win_status = self.check_win_table[1][1]
+
 
 
     def mouseToGrid(self):
@@ -373,16 +426,19 @@ class TicTacToeWidge(ModeWidget):
         super().__init__()
         self.setLayout()
         self.grid = TTTGridWidget(self)
+        self.status = TTTGridStatusWidget(self)
 
     def setLayout(self):
         self.resize(1245,787)
         self.setBackgroudColor()
         self.center()
-        self.setGoFrontPageButton("GUI-fig/BuildMode/BuildMode.png")
+        self.setGoFrontPageButton("GUI-fig/tictactoe/tictactoe.png")
 
 
 if __name__ == '__main__':
     #node.start()
     app = QApplication(sys.argv)
-    ex = FrontPageWidget()
+    ex = TicTacToeWidge()
+    ex.show()
+    #ex = FrontPageWidget()
     sys.exit(app.exec_())

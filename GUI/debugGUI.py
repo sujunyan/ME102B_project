@@ -93,14 +93,14 @@ class FrontPageWidget(QWidget):
 
     def pickAndPlace(self):
         pass
-        node.send_move(450,40,0)
+        node.send_move(450,207,0)
         time.sleep(5)
         self.gripperAction(5) ## pick a lego
-        time.sleep(5)
-        node.send_move(187,97,0)
+        time.sleep(3)
+        node.send_move(354,105,0)
         time.sleep(5)
         self.gripperAction(6) ## place a lego
-        time.sleep(5)
+        time.sleep(3)
 
 
 
@@ -134,10 +134,14 @@ if __name__ == '__main__':
     ex = FrontPageWidget()
     sys.exit(app.exec_())
 
-#35
-#170 65 0
-#450  40 0
-#450 120 0
-#450 200 0
+#450  43 0
+#450 126 0
+#450 207 0
+#450 288 0
 
-#187 97 0
+#182 105 0
+#182 191 0
+#182 270 0
+
+#268 105 0
+#354 105
