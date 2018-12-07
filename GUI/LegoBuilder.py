@@ -9,9 +9,23 @@ import CommunicationNode
 
 
 
-#port_name = "COM3"
-#baudrate = 115200
-#node = CommunicationNode.CommunicationNode(port_name,baudrate)
+port_name = "COM3"
+baudrate = 115200
+node = CommunicationNode.CommunicationNode(port_name,baudrate)
+
+
+Lego_pos_list = [ [ (182,105,0), (268,105,0), (354,105,0)   ] ,
+                    [(182,191,0), (268,191,0), (354,191,0) ],
+                    [(182,270,0), (268,270,0), (354,270,0) ] ]
+
+dispensor1_pos = [(450,43,0), (450,126,0), (450,207,0),(450,288,0)]
+dispensor2_pos = [(92,39,0), (92,121,0), (92,204,0),(92,287,0)]
+
+dispensor_pos = []
+for i in range(4):
+    dispensor_pos.append(dispensor1_pos[i])
+    dispensor_pos.append(dispensor2_pos[i])
+
 
 # the front page widget that is in charge of front page
 class FrontPageWidget(QWidget):
@@ -327,10 +341,12 @@ class TTTGridStatusWidget(QWidget):
 
         if(val == 4):
             self.pixmap = self.player2_win_img
+
 # TicTacToe grid Widge
 class TTTGridWidget(QWidget):
     def __init__(self, parent=None):
         super(TTTGridWidget, self).__init__(parent)
+        self._parent = parent
         self.initUI()
         self.setMouseTracking(True)
 
@@ -350,7 +366,7 @@ class TTTGridWidget(QWidget):
         #self.setGeometry(0, 0, 1245,787)
         self.check_win_table = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]]
         self.win_status = -1
-
+        self.cnt = 0
         #self.label = QLabel(self)
         #self.label.resize(200, 40)
         self.show()
@@ -359,26 +375,33 @@ class TTTGridWidget(QWidget):
         self.mouse_x = event.x()
         self.mouse_y = event.y()
         self.cur_shape.move(*self.mouseToGrid())
-        #print((event.x(),event.y()))
+        print((event.x(),event.y()))
 
     def mousePressEvent(self,event):
+
+        if(self.win_status != -1):
+            return
         (x,y) = self.mouseToGrid()
         x = int(x / self.step)
         y = int(y / self.step)
         print (x,y)
 
-        if(self.win_status != -1):
-            return
 
         self.check_win_table[x][y] = self.is_cross
         print (self.check_win_table)
         self.cur_shape = ShapeWidget(self,position =self.mouseToGrid(),is_cross = self.is_cross)
+
+        node.pickAndPlace(dispensor_pos[self.cnt],Lego_pos_list[2-x][2-y])
+
+
         if (self.is_cross == 1):
             self.is_cross = 0
-            super().status.setSetting(2)
+            #self._parent.status.setSetting(3)
         else:
             self.is_cross = 1
-            parent().status.setSetting(2)
+            #self._parent.status.setSetting(4)
+
+        self.cnt += 1
         self.checkWin()
 
     def checkWin(self):
@@ -426,17 +449,19 @@ class TicTacToeWidge(ModeWidget):
         super().__init__()
         self.setLayout()
         self.grid = TTTGridWidget(self)
-        self.status = TTTGridStatusWidget(self)
+        #self.status = TTTGridStatusWidget(self)
 
     def setLayout(self):
         self.resize(1245,787)
         self.setBackgroudColor()
         self.center()
         self.setGoFrontPageButton("GUI-fig/tictactoe/tictactoe.png")
+    def setStatus(self,val):
+        self.status.setSetting(val)
 
 
 if __name__ == '__main__':
-    #node.start()
+    node.start()
     app = QApplication(sys.argv)
     ex = TicTacToeWidge()
     ex.show()

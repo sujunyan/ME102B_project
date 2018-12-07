@@ -16,7 +16,7 @@ Lego_pos_list = [ [ (182,105,0), (268,105,0), (354,105,0)   ] ,
                     [(182,270,0), (268,270,0), (354,270,0) ] ]
 
 line_x1 = 230
-line_x2 = 300
+line_x2 = 315
 
 
 class CommunicationNode:
@@ -113,7 +113,7 @@ class CommunicationNode:
 		self.send_gripper_action(5) # pick a lego
 		time.sleep(5)
 		(start_x,start_y,z)  = start_pos
-		start_offset = 60 # path planning to avoid
+		start_offset = 50 # path planning to avoid
 		next_x = start_x
 		if(start_x < 300):
 			next_x = start_x + start_offset
